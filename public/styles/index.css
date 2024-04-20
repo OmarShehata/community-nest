@@ -1,0 +1,28 @@
+#title-container {
+  /*text-align: center;*/
+  display: flex;
+  flex-direction: column;
+      align-items: center;
+
+}
+
+#title {
+  margin-bottom: 0px;
+  font-size: 64px;
+}
+
+@media only screen and (max-width: 900px) {
+  #title {
+    font-size: 32px;
+  }
+}
+
+#subtitle {
+  margin-top: 0px;
+  color: var(--color-muted);
+}
+#about-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}

@@ -1,0 +1,130 @@
+/* 
+soft pink FFEFEF
+hard pink F3D0D7
+hard brown F0EBE3
+soft brown F6F5F2
+https://colorhunt.co/palette/f6f5f2f0ebe3f3d0d7ffefef
+*/
+:root {
+  --color-bg: #FFEFEF;
+  --color-primary: #d76d82;
+  --color-muted: #dbadb6;
+}
+
+@font-face {
+  font-family: HK Grotesk;
+  font-weight: bold;
+  src: url("/fonts/HKGrotesk-Bold.otf")
+    format("opentype");
+}
+
+html {
+  font-family: HK Grotesk;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--color-primary);
+  background: var(--color-bg);
+  font-size: 18px;
+}
+
+#main-content {
+    margin:auto;
+    max-width: 1400px;
+    padding: 30px;
+}
+
+@media only screen and (max-width : 900px) {
+    #main-content {
+      padding: 0px;
+    }
+}
+
+.muted-text {
+  color: var(--color-muted);
+}
+
+a {
+  color: var(--color-muted);
+}
+
+/* rule styles */
+.rules-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.rule-item {
+  margin: 10px;
+  padding: 10px;
+  word-wrap: break-word;
+  width: 400px;
+  position: relative;
+  height: 100%;
+}
+
+.rule-title {
+  font-size: 30px;
+}
+
+.rule-body {
+  font-size: 18px;
+}
+
+.rule-button {
+  cursor: pointer;
+  position: absolute;
+  border-radius: 25px;
+  border: 2px solid #b39e5047;
+  padding: 3px;
+}
+
+.rule-body-edit {
+  display: none;
+  width:  100%;
+  height: calc(100% - 80px);
+  margin-top: 40px;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-size: 18px;
+  font-family: HK Grotesk;
+  min-height: 400px;
+}
+
+.rule-edit-log {
+  display: none;
+}
+
+.three-dots {
+  text-align: center;
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+
+.three-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-muted);
+  display: inline-block;
+  margin: 0 15px;
+}
+
+.highlighted-span {
+    background: #fff1be;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.highlighted-code {
+    white-space: pre-wrap;
+    word-break: break-all;
+    background: #5f5328;
+    padding: 10px;
+    border-radius: 5px;
+    color: var(--color-bg);
+}
