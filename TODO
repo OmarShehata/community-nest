@@ -1,2 +1,17 @@
-- Deploy to Glitch
+- Archive page
+    - Also try semantic similarity ? 
+
+ideas doc: https://docs.google.com/document/d/1cmUSCneF50DNFL_rhiplOwqR7mRqp9Syq7VzfXwSAMI/edit
+
+Restrictons on upload:
+- file size limit?
+- only allow .zip files? 
+- Only allow oauth 
+
+Nice to have:
+- Look into "login with twitter" for soft gating?
+    https://developer.twitter.com/en/docs/authentication/oauth-2-0/user-access-token
+    https://github.com/kg0r0/twitter-oauth2/tree/main/example
+    https://www.npmjs.com/package/twitter-oauth2
+
 - Make "about" button a flex container 

@@ -25,48 +25,13 @@ export async function connectToDB() {
 
 
 export function getSchema(sequelize) {
-	const User = sequelize.define('users', {
-		name: { type: Sequelize.STRING },
-		token: { type: Sequelize.STRING },
-	  	metadata: { type: Sequelize.STRING }
+	const Archive = sequelize.define('archives', {
+		username: { type: Sequelize.STRING },
+		numTweets: { type: Sequelize.NUMBER },
+		accountId:  { type: Sequelize.STRING, primaryKey: true },
+		metadata: { type: Sequelize.STRING },
+	  	hasUpload: { type: Sequelize.BOOLEAN, defaultValue: true }
 	})
 
-	const Rule = sequelize.define('rules', {
-		title: { type: Sequelize.STRING, },
-		description: { type: Sequelize.STRING, },
-		edited: { type: Sequelize.BOOLEAN, defaultValue: false }
-	})
-
-	// connects two rules together
-	const Connection = sequelize.define('connections', {
-		metadata: { type: Sequelize.STRING }
-	})
-
-	// Resonation records, each time a user "resonates" with a post
-	const Resonation = sequelize.define('resonations', {
-
-	}, {
-		indexes: [
-		    {
-		      unique: true,
-		      fields: ['userId', 'ruleId']
-		    }
-		  ]
-	})
-
-	// A user can have several rules, and a rule belongs to 1 and only 1 user
-	User.hasMany(Rule, { foreignKey: 'author_id' });
-	Rule.belongsTo(User, { foreignKey: 'author_id' })
-	// A connection connects two rules
-	Connection.belongsTo(Rule, { foreignKey: 'rule_id_1' });
-	Connection.belongsTo(Rule, { foreignKey: 'rule_id_2' });
-
-	// Allow users to "resonate" with rules
-	User.belongsToMany(Rule, { through: Resonation, foreignKey: 'userId' });
-	Rule.belongsToMany(User, { through: Resonation, foreignKey: 'ruleId' });
-
-
-	return {
-		User, Rule, Connection
-	}
+	return { Archive }
 }

@@ -3,12 +3,65 @@
 
 <a id="about-btn" href="/about">About</a>
 
-<div id="title-container">
-  <h1 id="title">
-    🪹 Community Nest 🪹
-  </h1>
-  <h4 id="subtitle">
-    a collection of archives from one part of twitter
-  </h4>
-</div>
+<div class="content">
+    
+  <div id="title-container">
+    <h1 id="title">
+      🪹 Community Nest 🪹
+    </h1>
+    <h4 id="subtitle">
+      a public-domain collection of archives from one part of twitter
+    </h4>
 
+    <ol>
+      <li>
+        Download your Twitter archive from:<br/>
+        <a href="https://twitter.com/settings/download_your_data" target="_blank">https://twitter.com/settings/download_your_data</a>
+      </li>
+      <li>Upload it here, or self host &amp; submit a link</li>
+      <li>Semantically analyze your archive, link it with friends,<br/> share tools &amp; help others!</li>
+    </ol>
+
+    <p class="muted-text todo">
+      TODO: goal is basically to have an open collection of our twitter archives. I want to semantically analyze mine and visualize it. It would be nice if people I interact with also had their archives published, so I can link them/visualize them together.
+    </p>
+    <p class="muted-text todo">
+      It would be EXTRA nice if friends  &amp;  people I'm interested in learning about posted theirs too, because then I can ask an LLM "what are their views on this or that? What's the first instance where they expressed an opinion on ABC?"
+    </p>
+  </div>
+
+  <h1>
+    Archives
+  </h1>
+
+  <p>
+    You have two options. Either upload your archive directly and let us host it. Or host it yourself and just submit a link here. These archives are freely available, anyone can get a copy of the database which contains (1) the raw data (2) links to those who self host 
+  </p>
+
+  {{#each archives}}
+    <li>
+      {{this.dataValues.username}} ({{this.dataValues.numTweets}} tweets)
+      <br/><a href="/archives/{{this.dataValues.accountId}}" style="margin-left: 30px;">open archive 📦</a></li>
+    </li>
+  {{/each}}
+
+  <p class="muted-text todo">
+    TODO: button to download the entire DB
+  </p>
+
+  <h1>
+    Submit your archive
+  </h1>
+
+  <form ref='uploadForm' 
+      id='uploadForm' 
+      action='/newArchive' 
+      method='post' 
+      encType="multipart/form-data">
+        <label>Archive zip:</label> 
+        <input type="file" name="archive" />
+        <br/>
+        <input type='submit' value='Upload!' />
+    </form>     
+
+</div>

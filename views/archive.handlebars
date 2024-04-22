@@ -1,0 +1,15 @@
+<h3>
+  <a href="/">🔙 Back to home</a>
+</h3>
+<h1 id="title">
+  {{archive.dataValues.username}} ({{archive.dataValues.numTweets}} tweets)
+</h1>
+
+ {{#each tweets}}
+    <p>
+        {{this.tweet.full_text}}
+    </p>
+    <p style="color: gray">
+        {{this.tweet.created_at}}
+    </p>
+ {{/each}}

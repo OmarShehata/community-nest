@@ -27,14 +27,14 @@ html {
   font-size: 18px;
 }
 
-#main-content {
+.content {
     margin:auto;
-    max-width: 1400px;
+    max-width: 700px;
     padding: 30px;
 }
 
 @media only screen and (max-width : 900px) {
-    #main-content {
+    .content {
       padding: 0px;
     }
 }
