@@ -10,6 +10,7 @@ Clone this repo. Install node/pnpm (https://pnpm.io/installation).
 
 1. `pnpm install` to intall node dependencies
 1. Run `env.bat` to set environmant variables 
+1. Initialize the DB by running `node scripts/reset_db.js`
 1. `pnpm start` to run the server
 
 The individual pages are in `views/`. The server entry point is in `src/server.js`.
