@@ -16,3 +16,21 @@ Clone this repo. Install node/pnpm (https://pnpm.io/installation).
 The individual pages are in `views/`. The server entry point is in `src/server.js`.
 
 Any file in `public/` will be available publicly at the root url. For example, `public/image.png` will be served at `http://localhost:3000/image.png`. 
+
+#### Deploying to glitch
+
+- get the glitch git URL
+- Run in the glitch project's terminal
+
+```
+git config receive.denyCurrentBranch ignore
+```
+
+- Add it to your local repo:
+
+```
+git remote add glitch 
+```
+
+- Push with `git push glitch`
+- You may need to run on Glitch's terminal `refresh`
