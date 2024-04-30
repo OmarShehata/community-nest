@@ -41,8 +41,8 @@ async function run() {
   app.get("/", async function (request, response) {
     // TODO: get the list of archives
     const archives = await models.Archive.findAll()
-
-    response.render('index', { archives })
+    const expectedFiles = ['account.js', 'tweets.js', 'like.js', 'following.js', 'follower.js']
+    response.render('index', { archives, expectedFiles })
   });
   app.get("/about", async function(request, response) {
     response.render('about')
@@ -55,6 +55,7 @@ async function run() {
       where: { accountId }
     });
     const archive = archives[0]
+    console.log(archive)
 
     const tweetsPath = `${ARCHIVE_DIRECTORY}/${archive.username}/tweets.json`
     const tweets = JSON.parse(await fs.promises.readFile(tweetsPath, 'utf8'));

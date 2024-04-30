@@ -1,14 +1,10 @@
 /* 
-soft pink FFEFEF
-hard pink F3D0D7
-hard brown F0EBE3
-soft brown F6F5F2
-https://colorhunt.co/palette/f6f5f2f0ebe3f3d0d7ffefef
+https://colorhunt.co/palette/fefaf6eadbc8dac0a3102c57
 */
 :root {
-  --color-bg: #FFEFEF;
-  --color-primary: #d76d82;
-  --color-muted: #dbadb6;
+  --color-bg: #FEFAF6;
+  --color-primary: #7d4533;
+  --color-muted: #b97028;
 }
 
 @font-face {

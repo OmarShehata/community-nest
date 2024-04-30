@@ -1,4 +1,7 @@
 <script type="module" src="/components/AddNewRuleButton.js"></script>
+<script src="/lib/jszip.js"></script>
+<script src="/lib/FileSaver.min.js"></script>
+
 <link rel="stylesheet" type="text/css" href="/styles/index.css">
 
 <a id="about-btn" href="/about">About</a>
@@ -49,19 +52,53 @@
     TODO: button to download the entire DB
   </p>
 
-  <h1>
-    Submit your archive
-  </h1>
+  <p>
+    Upload the following files:
+  </p>
 
-  <form ref='uploadForm' 
+  <ul>
+    {{#each expectedFiles}}
+      <li><code>{{this}}</code></li>
+    {{/each}}  
+  </ul>
+
+  <form multiple ref='uploadForm' 
       id='uploadForm' 
       action='/newArchive' 
       method='post' 
       encType="multipart/form-data">
         <label>Archive zip:</label> 
-        <input type="file" name="archive" />
+        <input type="file" name="archive" multiple/>
         <br/>
         <input type='submit' value='Upload!' />
     </form>     
 
+  <script>
+    const form = document.querySelector("#uploadForm")
+    form.onchange = async function(e) {
+        const files = e.target.files 
+        console.log(files[0])
+        const oldZip = await JSZip.loadAsync(files[0])
+        // result.file('Your archive.html').async("string").then(console.log)
+        console.log(oldZip)
+        const newZip = new JSZip();
+        const filesToExtract = [
+          'account.js', 'tweets.js', 'like.js', 'following.js', 'follower.js'
+        ]
+        for (let i = 0; i < filesToExtract) {
+          const filename = `data/${filesToExtract[i]}`
+          newZip.file(filename, oldZip.files[filename].async('blob'));
+        }
+        
+        const result = await newZip.generateAsync({
+          type: "blob",
+          compression: "DEFLATE",
+          compressionOptions: {
+              level: 9
+          }
+        });
+
+        saveAs( result, 'new.zip')
+    }
+  </script>
 </div>
