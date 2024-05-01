@@ -11,6 +11,9 @@ import { v4 as uuidv4 } from 'uuid';
 import unzipper from 'unzipper'
 import fileUpload from 'express-fileupload';
 import { processArchive, moveFilesRecursively } from './processArchive.js'
+import zlib from 'zlib'
+import util from 'util'
+const gunzip = util.promisify(zlib.gunzip);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const DATA_DIRECTORY =  path.join(__dirname, '../.data/')
@@ -55,12 +58,20 @@ async function run() {
       where: { accountId }
     });
     const archive = archives[0]
-    console.log(archive)
 
-    const tweetsPath = `${ARCHIVE_DIRECTORY}/${archive.username}/tweets.json`
-    const tweets = JSON.parse(await fs.promises.readFile(tweetsPath, 'utf8'));
+    try {
+      const tweetsPath = `${ARCHIVE_DIRECTORY}/${archive.username}/tweets.json.gz`
+      const compressedData = await fs.promises.readFile(tweetsPath)
+      const decompressedData = await gunzip(compressedData);
+      const dataString = decompressedData.toString('utf8');
 
-    response.render('archive', { archive, tweets })
+      const tweets = JSON.parse(dataString);
+      response.render('archive', { archive, tweets })
+    } catch (error) {
+      response.render('archive', { archive, error })
+    }
+
+    
   })
   app.post('/newArchive', async function (request, response) {
     // TODO take twitter oauth and check that it's valid?
@@ -91,14 +102,14 @@ async function run() {
         await models.Archive.create(options)
       }
 
-      // 
       // Move to folder with username
       const sourcePath = tempFolder
       const desPath = `${ARCHIVE_DIRECTORY}/${result.account.username}/`
       await moveFilesRecursively(sourcePath, desPath)
       await fs.promises.rm(tempFolder, { recursive: true });
 
-      response.send('File uploaded ');
+      console.log("Success!")
+      response.redirect(`/archives/${result.account.accountId}`)
     });
   })
 

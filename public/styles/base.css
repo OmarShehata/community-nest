@@ -29,6 +29,10 @@ html {
     padding: 30px;
 }
 
+.todo {
+  display: none;
+}
+
 @media only screen and (max-width : 900px) {
     .content {
       padding: 0px;

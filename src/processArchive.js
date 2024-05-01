@@ -2,6 +2,9 @@ import unzipper from 'unzipper'
 import * as fs from 'fs'
 import path from 'path'
 import readline from 'readline'
+import zlib from 'zlib'
+import util from 'util'
+const gzip = util.promisify(zlib.gzip);
 
 export async function processArchive(archivePath) {
     // .data/temp/archive.zip
@@ -32,6 +35,11 @@ export async function processArchive(archivePath) {
     // Get count of tweets 
     const tweetsPath = `${outDirectory}/data/tweets.json`
     const tweets = JSON.parse(await fs.promises.readFile(tweetsPath, 'utf8'));
+    // Write back tweets 
+    await fs.promises.writeFile(tweetsPath, JSON.stringify(tweets), 'utf8');
+    const compressedData = await gzip(JSON.stringify(tweets));
+    await fs.promises.writeFile(tweetsPath + '.gz', compressedData);
+
     // Delete the original archive
     await fs.promises.rm(archivePath, { recursive: true, force: true });
     
