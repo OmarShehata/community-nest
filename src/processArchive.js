@@ -39,14 +39,14 @@ export async function processArchive(archivePath) {
     // Get count of tweets 
     const tweetsPath = `${outDirectory}/data/tweets.json`
     const tweets = JSON.parse(await fs.promises.readFile(tweetsPath, 'utf8'));
-    let compressedData = await gzip(JSON.stringify(tweets));
+    let compressedData = await gzip(JSON.stringify(tweets, null,2));
     await fs.promises.writeFile(tweetsPath + '.gz', compressedData);
     await fs.promises.rm(tweetsPath, { recursive: true, force: true });
 
     // gzip like.json
     const likePath = `${outDirectory}/data/like.json`
     const likes = JSON.parse(await fs.promises.readFile(likePath, 'utf8'));
-    compressedData = await gzip(JSON.stringify(likes));
+    compressedData = await gzip(JSON.stringify(likes, null,2));
     await fs.promises.writeFile(likePath + '.gz', compressedData);
     await fs.promises.rm(likePath, { recursive: true, force: true });
 

@@ -1,17 +1,108 @@
+<style>
+  #metadata {
+    margin-top:0px;
+    color: #dac0b7;
+  }
+  #title {
+    margin-bottom: 0px;
+  }
+  .date {
+    color: #dac0b7;
+  }
+  .tweet-text {
+    margin-bottom: 0px;
+  }
+</style>
 <h3>
   <a href="/">🔙 Back to home</a>
 </h3>
 <h1 id="title">
   {{archive.dataValues.username}} ({{archive.dataValues.numTweets}} tweets)
 </h1>
-
+<p id="metadata"></p>
+<hr/>
 {{error}}
 
- {{#each tweets}}
-    <p>
-        {{this.tweet.full_text}}
-    </p>
-    <p style="color: gray">
-        {{this.tweet.created_at}}
-    </p>
- {{/each}}
+<div id="tweet-container">
+  
+</div>
+
+ <script>
+  const container = document.querySelector("#tweet-container")
+  const accountId = "{{archive.dataValues.accountId}}"
+  console.log("accountId", accountId)
+
+  let tweets = {{{json tweets}}}
+  tweets = preprocessTweets(tweets)
+  const result = filterTweets(tweets)
+  tweets = sortTweetsByDate(result.tweets)
+  document.querySelector("#metadata").innerHTML = `Replies: ${result.numReplies} (hidden). Retweets: ${result.numRetweets} (hidden). Showing ${tweets.length} tweets.`
+
+  addTweetsToDOM(tweets)
+
+  //  -------------------
+
+  function sortTweetsByDate(processedTweets) {
+    return processedTweets.sort(function(a,b){
+        return a.date - b.date
+      });
+  }
+
+  function addTweetsToDOM(tweets) {
+    tweets.forEach(tweet => {
+        const element = document.createElement('div')
+        element.classList.add('tweet')
+        element.innerHTML = `<p class="tweet-text"> ${tweet.full_text} <a href="${tweet.url}">↗️</a> </p>
+        <span class="date"> ${formatDate(tweet.date)} </span>`
+        container.appendChild(element)
+    })
+
+    
+}
+
+  function preprocessTweets(tweets) {
+    const newTweets = []
+    for (let i = 0; i < tweets.length; i++) {
+      const tweet = tweets[i].tweet 
+      tweet.url = `https://twitter.com/i/web/status/${tweet.id}`
+      tweet.date = new Date(tweet.created_at)
+      newTweets.push(tweet)
+    }
+    return newTweets
+  }
+
+  function filterTweets(tweets) {
+    const newTweets = []
+    let numRetweets = 0
+    let numReplies = 0
+    for (let i = 0; i < tweets.length; i++) {
+      const tweet = tweets[i]
+
+      if (tweet.full_text.startsWith('RT')) {
+        numRetweets++
+        continue
+      }
+
+      if (tweet.in_reply_to_user_id_str) {
+        // It's a reply! but include if it's a reply to myself
+        if (tweet.in_reply_to_user_id_str != accountId) {
+          numReplies ++
+          continue
+        }
+      }
+
+      newTweets.push(tweets[i])
+    }
+
+    return { tweets: newTweets, numRetweets , numReplies }
+  }
+
+  function formatDate(date) {
+    return date.toLocaleDateString('en-US', { 
+        hour: 'numeric',
+        year: 'numeric', 
+        month: 'short',
+        day: '2-digit'
+    });
+}
+ </script>

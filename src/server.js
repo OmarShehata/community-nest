@@ -29,7 +29,11 @@ async function run() {
 
 
   const app = express();
-  app.engine('handlebars', engine());
+  app.engine('handlebars', engine({
+    helpers: {
+      json: JSON.stringify
+    }
+  }));
   app.set('view engine', 'handlebars');
   app.set('views', './views');
   app.use(fileUpload({
@@ -50,6 +54,7 @@ async function run() {
   app.get("/about", async function(request, response) {
     response.render('about')
   })
+  
 
   //////// API routes
   app.get("/archives/:accountId", async function(request, response) {

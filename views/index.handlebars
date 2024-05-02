@@ -37,10 +37,6 @@
     Archives
   </h1>
 
-  <p>
-    You have two options. Either upload your archive directly and let us host it. Or host it yourself and just submit a link here. These archives are freely available, anyone can get a copy of the database which contains (1) the raw data (2) links to those who self host 
-  </p>
-
   {{#each archives}}
     <li>
       {{this.dataValues.username}} ({{this.dataValues.numTweets}} tweets)
@@ -94,6 +90,7 @@
       ]
       for (let i = 0; i < filesToExtract.length; i++) {
         const filename = `data/${filesToExtract[i]}`
+        console.log("Reading", filename)
         newZip.file(filename, oldZip.files[filename].async('blob'));
       }
       
