@@ -30,7 +30,7 @@
  <script>
   const container = document.querySelector("#tweet-container")
   const accountId = "{{archive.dataValues.accountId}}"
-  console.log("accountId", accountId)
+  const username = "{{archive.dataValues.username}}"
 
   let tweets = {{{json tweets}}}
   tweets = preprocessTweets(tweets)
@@ -64,7 +64,8 @@
     const newTweets = []
     for (let i = 0; i < tweets.length; i++) {
       const tweet = tweets[i].tweet 
-      tweet.url = `https://twitter.com/i/web/status/${tweet.id}`
+      // tweet.url = `https://twitter.com/i/web/status/${tweet.id}`
+      tweet.url = `https://twitter.com/${username}/status/${tweet.id}`
       tweet.date = new Date(tweet.created_at)
       newTweets.push(tweet)
     }
