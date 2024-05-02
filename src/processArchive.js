@@ -6,6 +6,10 @@ import zlib from 'zlib'
 import util from 'util'
 const gzip = util.promisify(zlib.gzip);
 
+function gzipFile() {
+
+}
+
 export async function processArchive(archivePath) {
     // .data/temp/archive.zip
     const outDirectory = path.dirname(archivePath)
@@ -35,10 +39,16 @@ export async function processArchive(archivePath) {
     // Get count of tweets 
     const tweetsPath = `${outDirectory}/data/tweets.json`
     const tweets = JSON.parse(await fs.promises.readFile(tweetsPath, 'utf8'));
-    // Write back tweets 
-    await fs.promises.writeFile(tweetsPath, JSON.stringify(tweets), 'utf8');
-    const compressedData = await gzip(JSON.stringify(tweets));
+    let compressedData = await gzip(JSON.stringify(tweets));
     await fs.promises.writeFile(tweetsPath + '.gz', compressedData);
+    await fs.promises.rm(tweetsPath, { recursive: true, force: true });
+
+    // gzip like.json
+    const likePath = `${outDirectory}/data/like.json`
+    const likes = JSON.parse(await fs.promises.readFile(likePath, 'utf8'));
+    compressedData = await gzip(JSON.stringify(likes));
+    await fs.promises.writeFile(likePath + '.gz', compressedData);
+    await fs.promises.rm(likePath, { recursive: true, force: true });
 
     // Delete the original archive
     await fs.promises.rm(archivePath, { recursive: true, force: true });

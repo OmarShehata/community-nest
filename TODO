@@ -1,9 +1,13 @@
 - redeploy on glitch or something
     https://developers.cloudflare.com/pages/
+    https://community.cloudflare.com/t/how-to-deploy-nodejs-express-app-to-workers/233925/2
 
 
-- A page to just sanitize the archive zip
-
+- export 
+    - add the DB file and the archives folder to a zip file
+- import & merge
+    - run a script to add entries from another DB
+    - copy the archives to the right folder
 
 ideas doc: https://docs.google.com/document/d/1cmUSCneF50DNFL_rhiplOwqR7mRqp9Syq7VzfXwSAMI/edit
 
