@@ -1,7 +1,5 @@
-- redeploy on glitch or something
-    https://developers.cloudflare.com/pages/
-    https://community.cloudflare.com/t/how-to-deploy-nodejs-express-app-to-workers/233925/2
-
+- Add loading for uploading
+- Lowercase usernames in db?
 
 - export 
     - add the DB file and the archives folder to a zip file

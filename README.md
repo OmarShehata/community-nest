@@ -33,4 +33,4 @@ git remote add glitch
 ```
 
 - Push with `git push glitch`
-- You may need to run on Glitch's terminal `refresh`
+- You may need to run on Glitch's terminal `refresh`, and `git reset --hard`

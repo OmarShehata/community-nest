@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import unzipper from 'unzipper'
 import fileUpload from 'express-fileupload';
 import { processArchive, moveFilesRecursively } from './processArchive.js'
+import { Op } from 'sequelize';
 import zlib from 'zlib'
 import util from 'util'
 const gunzip = util.promisify(zlib.gunzip);
@@ -55,29 +56,47 @@ async function run() {
     response.render('about')
   })
   
-
   //////// API routes
-  app.get("/archives/:accountId", async function(request, response) {
-    const accountId = request.params.accountId
-    const archives = await models.Archive.findAll({
-      where: { accountId }
+  app.get("/:pagename/:usernameORaccountId", async function(request, response) {
+    const { pagename, usernameORaccountId } = request.params
+    console.time('db_call')
+    // Try querying for username
+    let archives = await models.Archive.findAll({
+      where: { username: {
+        [Op.like]:  usernameORaccountId
+      } }
     });
+    // otherwise, query for accountId
+    if (archives.length == 0) {
+      archives = await models.Archive.findAll({
+        where: { accountId: usernameORaccountId }
+      });
+    }
+    if (archives.length == 0) {
+      response.status(404).send("Not found")
+      return
+    }
+    console.timeEnd('db_call')
     const archive = archives[0]
 
     try {
+      console.time('render')
+
       const tweetsPath = `${ARCHIVE_DIRECTORY}/${archive.username}/tweets.json.gz`
       const compressedData = await fs.promises.readFile(tweetsPath)
       const decompressedData = await gunzip(compressedData);
       const dataString = decompressedData.toString('utf8');
 
       const tweets = JSON.parse(dataString);
-      response.render('archive', { archive, tweets })
-    } catch (error) {
-      response.render('archive', { archive, error })
-    }
+      response.render(pagename, { archive, tweets })
+      console.timeEnd('render')
 
-    
+    } catch (error) {
+      console.log(error)
+      response.status(500).send(error)
+    } 
   })
+
   app.post('/newArchive', async function (request, response) {
     // TODO take twitter oauth and check that it's valid?
     console.log('Received file:', request.files.archive.name);
