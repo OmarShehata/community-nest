@@ -1,4 +1,7 @@
 <style>
+  #metadata a {
+     color: #dac0b7;
+  }
   #metadata {
     margin-top:0px;
     color: #dac0b7;
@@ -12,6 +15,55 @@
   .tweet-text {
     margin-bottom: 0px;
   }
+  #search {
+    padding: 6px;
+    font-size: 15px;
+    border-radius: 5px;
+    width: 400px;
+    display: none;
+  }
+  #error {
+    color: rgb(255, 105, 105);
+  }
+
+  #tweet-container {
+    /*
+      white-space: pre-wrap;       
+      word-wrap: break-word; 
+    */
+    display: flex;
+    flex-wrap: wrap;
+    /* justify-content: space-around;    */
+  }
+
+
+  .tweet {
+    border: 1px solid rgb(255, 190, 85);
+    margin: 5px;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+  .tweet p {
+    margin-top: 0px;
+  }
+  .tweet .metadata {
+    color:  #dac0b7;
+  }
+  .tweet .toolbar {
+    font-size: 20px;
+  }
+
+  .thread {
+    border: 1px solid rgb(255, 190, 85);
+    border-radius: 5px;
+  }
+  .thread .tweet {
+    border: none;
+  }
 </style>
 <h3>
   <a href="/">🔙 Back to home</a>
@@ -19,91 +71,63 @@
 <h1 id="title">
   {{archive.dataValues.username}} ({{archive.dataValues.numTweets}} tweets)
 </h1>
-<p id="metadata"></p>
+<p id="metadata">
+  Views: 📃 All tweets • ⛩️ <a href="">Interactions with followers</a> • 🎩 <a href="">Top tweets</a>
+</p>
 <hr/>
-{{error}}
+<p id="error">
+  {{error}}
+</p>
+<input id="search" placeholder="search" type="text" autocomplete="off"></input>
+<p id="loading-text">Loading tweets...</p>
+<p id="tweet-counts"></p>
 
 <div id="tweet-container">
   
 </div>
+<script src="/util.js"></script>
 
- <script>
-  const container = document.querySelector("#tweet-container")
-  const accountId = "{{archive.dataValues.accountId}}"
-  const username = "{{archive.dataValues.username}}"
+ <script>  
+  async function init() {
+      const container = document.querySelector("#tweet-container")
+      const accountId = "{{archive.dataValues.accountId}}"
+      const username = "{{archive.dataValues.username}}"
 
-  let tweets = {{{json tweets}}}
-  tweets = preprocessTweets(tweets)
-  const result = filterTweets(tweets)
-  tweets = sortTweetsByDate(result.tweets)
-  document.querySelector("#metadata").innerHTML = `Replies: ${result.numReplies} (hidden). Retweets: ${result.numRetweets} (hidden). Showing ${tweets.length} tweets.`
+      const util = new Util({accountId, username})
 
-  addTweetsToDOM(tweets)
-
-  //  -------------------
-
-  function sortTweetsByDate(processedTweets) {
-    return processedTweets.sort(function(a,b){
-        return a.date - b.date
-      });
-  }
-
-  function addTweetsToDOM(tweets) {
-    tweets.forEach(tweet => {
-        const element = document.createElement('div')
-        element.classList.add('tweet')
-        element.innerHTML = `<p class="tweet-text"> ${tweet.full_text} <a href="${tweet.url}">↗️</a> </p>
-        <span class="date"> ${formatDate(tweet.date)} </span>`
-        container.appendChild(element)
-    })
-
-    
-}
-
-  function preprocessTweets(tweets) {
-    const newTweets = []
-    for (let i = 0; i < tweets.length; i++) {
-      const tweet = tweets[i].tweet 
-      // tweet.url = `https://twitter.com/i/web/status/${tweet.id}`
-      tweet.url = `https://twitter.com/${username}/status/${tweet.id}`
-      tweet.date = new Date(tweet.created_at)
-      newTweets.push(tweet)
-    }
-    return newTweets
-  }
-
-  function filterTweets(tweets) {
-    const newTweets = []
-    let numRetweets = 0
-    let numReplies = 0
-    for (let i = 0; i < tweets.length; i++) {
-      const tweet = tweets[i]
-
-      if (tweet.full_text.startsWith('RT')) {
-        numRetweets++
-        continue
+      let tweets = []
+      try {
+        tweets = util.sortAscending(await util.fetchTweets())
+      } catch (e) {
+        document.querySelector("#error").innerHTML = `Failed to fetch tweets: ${String(e)}`
       }
+       
+      document.querySelector("#search").style.display = 'block'
+      document.querySelector("#loading-text").style.display = 'none'
 
-      if (tweet.in_reply_to_user_id_str) {
-        // It's a reply! but include if it's a reply to myself
-        if (tweet.in_reply_to_user_id_str != accountId) {
-          numReplies ++
-          continue
+
+      const  threadData = util.getThreads(tweets)
+      const { retweet_count, external_reply_count } = threadData
+      tweets = threadData.tweets
+
+      let str = ""
+      for (let i = 0; i < tweets.length; i++) {
+        const tweet = tweets[i]
+
+        if (tweet.parent) {
+          continue;
         }
+        if (tweet.nextTweet == null) {
+          str += util.makeHTMLForTweet(tweet)
+        } else {
+          str += util.makeHTMLForThread(tweet)
+        }
+        
       }
 
-      newTweets.push(tweets[i])
-    }
-
-    return { tweets: newTweets, numRetweets , numReplies }
+      document.querySelector("#tweet-counts").innerHTML = `retweets: ${retweet_count} (hidden) non-self replies: ${external_reply_count} (hidden)`
+      container.innerHTML = str
   }
+  init()
 
-  function formatDate(date) {
-    return date.toLocaleDateString('en-US', { 
-        hour: 'numeric',
-        year: 'numeric', 
-        month: 'short',
-        day: '2-digit'
-    });
-}
  </script>

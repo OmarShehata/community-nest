@@ -1,8 +1,6 @@
 import express from 'express'
 import { engine } from 'express-handlebars';
-import { uniqueNamesGenerator, names } from 'unique-names-generator'
 import { connectToDB } from './db.js'
-import { makeRandomToken } from './randomToken.js'
 import { dirname } from 'path';
 import path from 'path'
 import * as fs from 'fs';
@@ -37,68 +35,55 @@ async function run() {
   }));
   app.set('view engine', 'handlebars');
   app.set('views', './views');
-  app.use(fileUpload({
-    // useTempFiles : true,
-    // tempFileDir : path.join(__dirname, '../.data/tmp')
-    
-  }));
+  app.use(fileUpload());
   app.use(express.json());
   app.use(express.static('public'));
 
   ///// Pages
   app.get("/", async function (request, response) {
-    // TODO: get the list of archives
     const archives = await models.Archive.findAll()
-    const expectedFiles = ['account.js', 'tweets.js', 'like.js', 'following.js', 'follower.js']
-    response.render('index', { archives, expectedFiles })
+    response.render('index', { archives })
   });
   app.get("/about", async function(request, response) {
     response.render('about')
   })
   
   //////// API routes
-  app.get("/:pagename/:usernameORaccountId", async function(request, response) {
-    const { pagename, usernameORaccountId } = request.params
-    console.time('db_call')
-    // Try querying for username
-    let archives = await models.Archive.findAll({
-      where: { username: {
-        [Op.like]:  usernameORaccountId
-      } }
-    });
-    // otherwise, query for accountId
-    if (archives.length == 0) {
-      archives = await models.Archive.findAll({
-        where: { accountId: usernameORaccountId }
-      });
-    }
+  app.get("/tweets/:usernameORaccountId", async function(request, response) {
+    const { usernameORaccountId } = request.params
+    
+    const archives = await getArchiveByUsernameOrId(models, usernameORaccountId)
     if (archives.length == 0) {
       response.status(404).send("Not found")
       return
     }
-    console.timeEnd('db_call')
+
     const archive = archives[0]
-
     try {
-      console.time('render')
-
       const tweetsPath = `${ARCHIVE_DIRECTORY}/${archive.username}/tweets.json.gz`
       const compressedData = await fs.promises.readFile(tweetsPath)
-      const decompressedData = await gunzip(compressedData);
-      const dataString = decompressedData.toString('utf8');
-
-      const tweets = JSON.parse(dataString);
-      response.render(pagename, { archive, tweets })
-      console.timeEnd('render')
-
+      response.writeHead(200, { 
+          'Content-Type': 'application/json',
+          'Content-Encoding': 'gzip'
+      });
+      response.end(compressedData);
     } catch (error) {
       console.log(error)
       response.status(500).send(error)
     } 
+
+  });
+  app.get("/:pagename/:usernameORaccountId", async function(request, response) {
+    const { pagename, usernameORaccountId } = request.params
+    const archives = await getArchiveByUsernameOrId(models, usernameORaccountId)
+    if (archives.length == 0) {
+      response.status(404).send("Not found")
+      return
+    }
+    response.render(pagename, { usernameORaccountId, archive: archives[0] })
   })
 
   app.post('/newArchive', async function (request, response) {
-    // TODO take twitter oauth and check that it's valid?
     console.log('Received file:', request.files.archive.name);
     // Move the zip file to a temporary directory with uuid name
     const uuid = uuidv4()
@@ -133,7 +118,7 @@ async function run() {
       await fs.promises.rm(tempFolder, { recursive: true });
 
       console.log("Success!")
-      response.redirect(`/archives/${result.account.accountId}`)
+      response.redirect(`/archive/${result.account.accountId}`)
     });
   })
 
@@ -143,13 +128,21 @@ async function run() {
 
 }
 
-run()
-
-async function extractZip(zipFilePath, tempFolder) {
-  return new Promise((resolve, reject) => {
-      fs.createReadStream(zipFilePath)
-          .pipe(unzipper.Extract({ path: tempFolder }))
-          .on('error', reject)
-          .on('finish', resolve);
+async function getArchiveByUsernameOrId(models, usernameORaccountId) {
+  // Try querying for username
+  let archives = await models.Archive.findAll({
+    where: { username: {
+      [Op.like]:  usernameORaccountId
+    } }
   });
+  // otherwise, query for accountId
+  if (archives.length == 0) {
+    archives = await models.Archive.findAll({
+      where: { accountId: usernameORaccountId }
+    });
+  }
+
+  return archives
 }
+
+run()
