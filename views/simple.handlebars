@@ -1,0 +1,52 @@
+<style>
+  #error {
+    color: rgb(255, 105, 105);
+  }
+
+</style>
+<h3>
+  <a href="/">🔙 Back to home</a>
+</h3>
+<h1 id="title">
+  {{archive.dataValues.username}} ({{archive.dataValues.numTweets}} tweets)
+</h1>
+<hr/>
+<p id="error">
+  {{error}}
+</p>
+<p id="loading-text" class="muted-text">Loading...</p>
+
+<div id="tweet-container"></div>
+<script src="/util.js"></script>
+
+ <script>  
+  const accountId = "{{archive.dataValues.accountId}}"
+  const username = "{{archive.dataValues.username}}"
+  const util = new Util({accountId, username})
+
+  async function init() { 
+    // Fetch tweets
+    let allTweets = []
+    try {
+      allTweets = await util.fetchTweets()
+    } catch (e) {
+      document.querySelector("#error").innerHTML = `Failed to fetch tweets: ${String(e)}`
+    }
+    document.querySelector("#loading-text").style.display = 'none'
+
+    // Display the first 10 tweets
+    let tweets = util.sortAscending(allTweets)
+    let str = ""
+    for (let i = 0; i < tweets.length; i++) {
+      const tweet = tweets[i]
+      console.log(JSON.stringify(tweet, null, 2))
+      str += `<p>${tweet.full_text}</p>`
+
+      if (i > 1000) break
+    }
+
+    document.querySelector("#tweet-container").innerHTML  = str
+  }
+  init()
+
+ </script>

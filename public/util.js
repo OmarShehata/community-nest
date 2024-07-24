@@ -78,8 +78,8 @@ class Util {
         })
     }
 
-    formatDate(date) {
-        return date.toLocaleDateString('en-US', { 
+    formatDate(date, options) {
+        return date.toLocaleDateString('en-US', options || { 
             hour: 'numeric',
             year: 'numeric', 
             month: 'short',
@@ -93,7 +93,7 @@ class Util {
       <div class="metadata">
         <p>${this.formatDate(tweet.date)}</p>
         <div class="toolbar">
-          ${tweet.retweet_count} 🔂 ${tweet.favorite_count} 🤍
+          ${Number(tweet.retweet_count).toLocaleString()} 🔂 ${Number(tweet.favorite_count).toLocaleString()} 🤍
           <a href="${tweet.url}" target="_blank" style="text-decoration:none">
             <svg width="20px" height="20px" viewBox="0 0 24 24" transform="translate(0 3)" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4V18C4 19.1046 4.89543 20 6 20H18C19.1046 20 20 19.1046 20 18V13" stroke="#292929" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path d="M9 15L20 4" stroke="#292929" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path d="M15 4H20V9" stroke="#292929" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
           </a>
@@ -113,4 +113,66 @@ class Util {
 
         return str
     }
+
+    countTweetsPerDay(tweets) {
+      // Step 1: Count occurrences for each day
+      const dateCounts = tweets.reduce((acc, item) => {
+        const date = truncateToDay(item.date);
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Step 2: Sort days by the number of items
+      const sortedDates = Object.entries(dateCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(entry => ({ date: entry[0], count: entry[1] }));
+        return sortedDates
+    }
+
+    countTweetsPerHour(tweets) {
+      const dateCounts = tweets.reduce((acc, item) => {
+        const date = truncateToHour(item.date);
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      }, {});
+
+      const sortedDates = Object.entries(dateCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(entry => ({ date: entry[0], count: entry[1] }));
+        return sortedDates
+    }
+
+    isTweetInteractingWith(accountId, tweet) {
+      // given an accountId, and a tweet
+      // returns true if this tweet is interacting with the account
+      const user_mentions = tweet.entities.user_mentions
+  
+      if (tweet.in_reply_to_user_id == accountId) {
+          return true
+      }
+  
+      for (let user of user_mentions) {
+          if (user.id == accountId) {
+              // this is true if I reply to them OR retweet
+              return true
+          }
+      }
+      return false
+  }
 }
+
+
+const truncateToDay = (date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+  const day = (date.getDate() + 1).toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const truncateToHour = (date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); 
+  const day = (date.getDate() + 1).toString().padStart(2, '0');
+  const hour = (date.getHours()).toString().padStart(2, '0');
+  return `${year}-${month}-${day}/${hour}`;
+};

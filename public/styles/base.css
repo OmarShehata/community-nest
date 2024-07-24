@@ -2,9 +2,9 @@
 https://colorhunt.co/palette/fefaf6eadbc8dac0a3102c57
 */
 :root {
-  --color-bg: #FEFAF6;
-  --color-primary: #7d4533;
-  --color-muted: #b97028;
+  --color-bg: #f1efe7;
+  --color-primary: rgb(112, 107, 87);
+  --color-muted: rgb(175 168 140)
 }
 
 @font-face {

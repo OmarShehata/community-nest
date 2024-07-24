@@ -1,9 +1,8 @@
-- what time of day I tweet
-- click on username to see all mentions & interactions
-- make url's clickable
-- query param for the different pages
-- add monaco editor so we can edit tweets in browser?
-    https://github.com/vanillawc/wc-monaco-editor?tab=readme-ov-file
+- make search work
+- followers page
+    - send followers down
+    - 
+
 
 - Add loading for uploading
 - Lowercase usernames in db?

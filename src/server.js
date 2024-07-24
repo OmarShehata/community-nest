@@ -49,6 +49,24 @@ async function run() {
   })
   
   //////// API routes
+  app.get("/following/:usernameORaccountId", async function(request, response) {
+    const { usernameORaccountId } = request.params
+
+    const archives = await getArchiveByUsernameOrId(models, usernameORaccountId)
+    if (archives.length == 0) {
+      response.status(404).send("Not found")
+      return
+    }
+
+    const archive = archives[0]
+    const tweetsPath = `${ARCHIVE_DIRECTORY}/${archive.username}/following.json`
+    const data = await fs.promises.readFile(tweetsPath)
+    response.writeHead(200, { 
+        'Content-Type': 'application/json'
+    });
+    response.end(data);
+  })
+
   app.get("/tweets/:usernameORaccountId", async function(request, response) {
     const { usernameORaccountId } = request.params
     
