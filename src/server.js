@@ -12,6 +12,8 @@ import { processArchive, moveFilesRecursively } from './processArchive.js'
 import { Op } from 'sequelize';
 import zlib from 'zlib'
 import util from 'util'
+import Embeddings from './embeddings.js'
+
 const gunzip = util.promisify(zlib.gunzip);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -25,7 +27,6 @@ async function run() {
   // Initialize data directories
   fs.mkdirSync(ARCHIVE_DIRECTORY, { recursive: true });
   fs.mkdirSync(TEMP_ZIP_FILE_DIR, { recursive: true });
-
 
   const app = express();
   app.engine('handlebars', engine({
@@ -49,6 +50,75 @@ async function run() {
   })
   
   //////// API routes
+  app.post("/semantic-search/:usernameORaccountId", async function(request, response) {
+    const { query } = request.body
+    const { usernameORaccountId } = request.params
+    
+    const archives = await getArchiveByUsernameOrId(models, usernameORaccountId)
+    if (archives.length == 0) {
+      response.status(404).send("Not found")
+      return
+    }
+    const accountId = archives[0].accountId
+    const embeddings = new Embeddings(accountId)
+    await embeddings.init()
+
+    const result = (await embeddings.query(query)).map(result => result.item.metadata)
+    // filter out quote tweets?
+    const finalResult = result.filter(item => item.text.indexOf('https://t.co/') != 0)
+    response.json(finalResult)
+  })
+
+  app.get("/generate-embeddings/:usernameORaccountId", async function(request, response) {
+    const { usernameORaccountId } = request.params
+    
+    const archives = await getArchiveByUsernameOrId(models, usernameORaccountId)
+    if (archives.length == 0) {
+      response.status(404).send("Not found")
+      return
+    }
+
+    const accountId = archives[0].accountId
+    // Create the embeddings file if it doesn't already exist for this account
+    const embeddings = new Embeddings(accountId)
+    await embeddings.init()
+    // Create a map of text -> embedding
+    const allItems = await embeddings.vectorDBIndex.listItems()
+    const itemMap = {}
+    for (let item of allItems) {
+      const key = item.metadata.text
+      itemMap[key] = item
+    }
+  
+    // Get all tweets that do NOT have an embedding
+    const tweetsJson = await getTweets(archives[0].username)
+    const tweets = tweetsJson.map(object => {
+      const tweet = object.tweet
+      return { tweetId: tweet.id , full_text: tweet.full_text  }
+    })
+    let tweetsWithoutEmbedding = tweets.filter(tweet => itemMap[tweet.full_text] == undefined)
+    if (tweetsWithoutEmbedding.length == 0) {
+      console.log("All tweets have embeddings!")
+      response.status(200).send("all tweets have embeddings!")
+      return
+    }
+    console.log("remaining tweets:", tweetsWithoutEmbedding.length)
+    const MAX = 2000
+    if (tweetsWithoutEmbedding.length > MAX) {
+      tweetsWithoutEmbedding = tweetsWithoutEmbedding.slice(0, MAX)
+    }
+  
+    console.log(`Embedding ${tweetsWithoutEmbedding.length} tweets`)
+    console.log("Starting with", tweetsWithoutEmbedding[0])
+    await embeddings.addItems(tweetsWithoutEmbedding.map(tweet => tweet.full_text))
+    console.log("Done!")
+
+    // const result = (await embeddings.query("love!")).map(result => result.item.metadata)
+    // console.log(JSON.stringify(result, null, 2))
+
+    response.status(200).send("done")
+  })
+
   app.get("/following/:usernameORaccountId", async function(request, response) {
     const { usernameORaccountId } = request.params
 
@@ -161,6 +231,13 @@ async function getArchiveByUsernameOrId(models, usernameORaccountId) {
   }
 
   return archives
+}
+
+async function getTweets(username) {
+  const tweetsPath = `${ARCHIVE_DIRECTORY}/${username}/tweets.json.gz`
+  const compressedData = await fs.promises.readFile(tweetsPath)
+  const data = await gunzip(compressedData)
+  return JSON.parse(data.toString())
 }
 
 run()

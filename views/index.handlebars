@@ -52,6 +52,10 @@
     Submit your archive
   </h1>
 
+  <p>
+    This will upload your archive publicly. For offline use, see below.
+  </p>
+
   <form multiple ref='uploadForm' 
       id='uploadForm' 
       action='/newArchive' 
@@ -62,6 +66,14 @@
         <br/>
         <input id="submitBtn" type='submit' value='Upload!' />
     </form>     
+
+    <h1>
+      Offline analysis
+    </h1>
+
+    <p>
+      TODO? Can this like take your archive, put it in local cache, or like in our DB but privately? thoughts??
+    </p>
 
   <script>
     const form = document.querySelector("#uploadForm")

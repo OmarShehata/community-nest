@@ -1,0 +1,152 @@
+<style>
+  #error {
+    color: rgb(255, 105, 105);
+  }
+
+  #title {
+    margin-bottom: 0px;
+  }
+  .date {
+    color: var(--color-muted);
+  }
+  .tweet-text {
+    margin-bottom: 0px;
+  }
+  #search {
+    padding: 6px;
+    font-size: 15px;
+    border-radius: 5px;
+    width: 400px;
+    display: none;
+  }
+  #error {
+    color: rgb(255, 105, 105);
+  }
+
+  .tweet-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .tweet {
+    border: 1px solid rgb(112, 107, 87, 0.5);
+    margin: 5px;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+  .tweet p {
+    margin-top: 0px;
+  }
+  .tweet .metadata {
+    color:  var(--color-muted);
+  }
+  .tweet .toolbar {
+    font-size: 20px;
+  }
+
+  .thread {
+    border: 1px solid rgb(112, 107, 87, 0.5);
+    border-radius: 5px;
+  }
+  .thread .tweet {
+    border: none;
+  }
+  .disabled-link {
+    text-decoration: none;
+  }
+
+</style>
+<h3>
+  <a href="/">🔙 Back to home</a>
+</h3>
+<h1 id="title">
+  {{archive.dataValues.username}} ({{archive.dataValues.numTweets}} tweets)
+</h1>
+<hr/>
+<p id="error">
+  {{error}}
+</p>
+<p id="loading-text" class="muted-text">Loading...</p>
+<input id="search" placeholder="semantic search" type="text" autocomplete="off"></input>
+
+<div id="tweet-container" class="tweet-container"></div>
+<script src="/util.js"></script>
+
+ <script>  
+  const accountId = "{{archive.dataValues.accountId}}"
+  const username = "{{archive.dataValues.username}}"
+  const util = new Util({accountId, username})
+
+  async function init() { 
+    // Fetch tweets
+    let allTweets = []
+    try {
+      allTweets = await util.fetchTweets()
+    } catch (e) {
+      document.querySelector("#error").innerHTML = `Failed to fetch tweets: ${String(e)}`
+    }
+    const loadingText = document.querySelector("#loading-text")
+    loadingText.style.display = 'none'
+    const searchInput = document.querySelector("#search");
+    searchInput.style.display = 'block'
+
+    let tweets = util.sortAscending(allTweets)
+
+    let timer = null
+    let lastTime = Date.now()
+    searchInput.oninput = (e) => {
+      if (timer != null) {
+        clearTimeout(timer)
+      }
+      timer = setTimeout(async () => {
+        if (searchInput.value == '') return 
+
+        loadingText.style.display = 'block'
+        const results = await semanticSearch(searchInput.value)
+        loadingText.style.display = 'none'
+        const map = {}
+        console.log(results)
+        for (let i = 0; i < results.length; i++) {
+          map[results[i]] = results[i]
+        }
+        // display tweets
+        let str = ""
+        for (let i = 0; i < tweets.length; i++) {
+          const tweet = tweets[i]
+          if (!map[tweet.full_text]) continue;
+
+          str += util.makeHTMLForTweet(tweet)
+        }
+        document.querySelector("#tweet-container").innerHTML  = str
+
+      }, 300)
+      
+    }
+
+    // display initial set of tweets
+    /* 
+    
+    
+    */
+  }
+  init()
+
+
+  async function semanticSearch(queryText) {
+    const response = await fetch(`/semantic-search/${accountId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: queryText  }),
+    })
+    const data = await response.json();
+    // data = [ {text}, ..]
+    return data.map(item => item.text)
+  }
+
+ </script>

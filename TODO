@@ -1,8 +1,5 @@
-- make search work
-- followers page
-    - send followers down
-    - 
-
+- embeddings? 
+    https://rajaosama.me/blogs/blazing-fast-search-with-embedding-model-ada 
 
 - Add loading for uploading
 - Lowercase usernames in db?

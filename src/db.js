@@ -33,5 +33,11 @@ export function getSchema(sequelize) {
 	  	hasUpload: { type: Sequelize.BOOLEAN, defaultValue: true }
 	})
 
-	return { Archive }
+	const Embeddings = sequelize.define('embeddings', {
+		accountId:  { type: Sequelize.STRING, primaryKey: true },
+		tweetId: { type: Sequelize.STRING  },
+		embeddingId: { type: Sequelize.STRING },
+	})
+
+	return { Archive, Embeddings }
 }

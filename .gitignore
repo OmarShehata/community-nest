@@ -3,4 +3,5 @@
 node_modules
 .data
 .env 
+env.bat
 public/archives/
